@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const cors = require('cors');
 const bodyParser = require('body-parser');
 
 const mysql = require('./App/Models/Praticiens/dbPraticiens');
@@ -9,8 +10,10 @@ mysql.connection;
 const app = express();
 const port = process.env.PORT || 3000;
 
+app.use(cors());
+
 app.listen(port);
-console.log('L\'API est démarré sur le port : ' + port);
+console.log("L'API est démarré sur le port : " + port);
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
