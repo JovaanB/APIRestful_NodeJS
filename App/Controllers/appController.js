@@ -16,8 +16,19 @@ exports.list_all_praticiens = (req, res) => {
 };
 
 // Nombre de pages pour praticiens
-exports.nombres_pages = (req, res) => {
+exports.nombres_pages_praticiens = (req, res) => {
   Praticien.nombresPages((err, nombres) => {
+    if (err) {
+      res.send(err);
+    } else {
+      res.send(nombres);
+    }
+  });
+};
+
+// Nombre de pages pour medicaments
+exports.nombres_pages_medicaments = (req, res) => {
+  Medicament.nombresPages((err, nombres) => {
     if (err) {
       res.send(err);
     } else {

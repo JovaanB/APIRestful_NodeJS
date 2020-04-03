@@ -23,6 +23,19 @@ Medicament.createMedicament = (newMedicament, result) => {
   });
 };
 
+Medicament.nombresPages = result => {
+  sql.query(
+    'SELECT IF(COUNT(*)%100 = 0,TRUNCATE(COUNT(*)/100, 0),TRUNCATE(COUNT(*)/100+1, 0)) FROM medicament;',
+    (err, res) => {
+      if (err) {
+        result(null, err);
+      } else {
+        result(null, res);
+      }
+    }
+  );
+};
+
 // Modification d'un médicament
 Medicament.updateMedicament = (id, medicament, result) => {
   sql.query(
