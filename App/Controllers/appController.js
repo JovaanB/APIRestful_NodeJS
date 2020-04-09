@@ -1,40 +1,46 @@
 let Praticien = require('../Models/Praticiens/appModelPraticiens');
 let Medicament = require('../Models/Medicaments/appModelMedicaments');
-// Liste de tous les praticiens
+let Ville = require('../Models/Praticiens/Villes/appModelVilles');
+let Types = require('../Models/Praticiens/Types/appModelTypes');
+
 exports.list_all_praticiens = (req, res) => {
-  Praticien.getAllPraticiens(req.params.numPage, (err, praticien) => {
-    if (req.params.numPage < 1 || isNaN(req.params.numPage)) {
-      res.send('Veuillez entrer un numéro de page valide.');
-    } else {
-      if (err) {
-        res.send(err);
+  Praticien.getAllPraticiens(
+    req.params.numPage,
+    req.params.filter || '',
+    req.params.limit || 100,
+    (praticien, nbResult) => {
+      if (req.params.numPage < 1 || isNaN(req.params.numPage)) {
+        res.send('Veuillez entrer un numéro de page valide.');
       } else {
-        res.send(praticien);
+        res.send({ praticiens: praticien, count: nbResult });
       }
     }
-  });
+  );
 };
 
-// Nombre de pages pour praticiens
-exports.nombres_pages_praticiens = (req, res) => {
-  Praticien.nombresPages((err, nombres) => {
+exports.list_all_types = (req, res) => {
+  Types.getAllTypes((err, types) => {
     if (err) {
       res.send(err);
     } else {
-      res.send(nombres);
+      res.send(types);
     }
   });
 };
 
-// Nombre de pages pour medicaments
-exports.nombres_pages_medicaments = (req, res) => {
-  Medicament.nombresPages((err, nombres) => {
-    if (err) {
-      res.send(err);
-    } else {
-      res.send(nombres);
+exports.list_all_medicaments = (req, res) => {
+  Medicament.getAllMedicaments(
+    req.params.numPage,
+    req.params.filter || '',
+    req.params.limit || 100,
+    (medicament, nbResult) => {
+      if (req.params.numPage < 1 || isNaN(req.params.numPage)) {
+        res.send('Veuillez entrer un numéro de page valide.');
+      } else {
+        res.send({ medicaments: medicament, count: nbResult });
+      }
     }
-  });
+  );
 };
 
 // Informations d'un praticien par ID
@@ -48,11 +54,20 @@ exports.read_praticien = (req, res) => {
   });
 };
 
+// Récupération des villes par code_postal
+exports.get_villes_cp = (req, res) => {
+  Ville.getVillesByCP(req.params.code_postal, (err, villes) => {
+    if (err) {
+      res.send(err);
+    } else {
+      res.json(villes);
+    }
+  });
+};
+
 //  Création d'un praticien
 exports.create_praticien = (req, res) => {
   let new_praticien = new Praticien(req.body);
-  console.log('new_praticien: ', new_praticien);
-
   if (!new_praticien) {
     res
       .status(400)

@@ -16,24 +16,11 @@ function Praticien(praticien) {
 Praticien.createPraticien = (newPraticien, result) => {
   sql.query('INSERT INTO praticien SET ?;', newPraticien, (err, res) => {
     if (err) {
-      result(null, err);
+      result(err, null);
     } else {
       result(null, res.insertId);
     }
   });
-};
-
-Praticien.nombresPages = result => {
-  sql.query(
-    'SELECT IF(COUNT(*)%100 = 0,TRUNCATE(COUNT(*)/100, 0),TRUNCATE(COUNT(*)/100+1, 0)) FROM praticien;',
-    (err, res) => {
-      if (err) {
-        result(null, err);
-      } else {
-        result(null, res);
-      }
-    }
-  );
 };
 
 // Modification d'un praticien
@@ -43,7 +30,7 @@ Praticien.updatePraticien = (id, praticien, result) => {
     [praticien, id],
     (err, res) => {
       if (err) {
-        result(null, err);
+        result(err, null);
       } else {
         result(null, res);
       }
@@ -55,24 +42,34 @@ Praticien.updatePraticien = (id, praticien, result) => {
 Praticien.deletePraticien = (id, result) => {
   sql.query('DELETE FROM praticien WHERE id = ?;', [id], (err, res) => {
     if (err) {
-      result(null, err);
+      result(err, null);
     } else {
       result(null, res);
     }
   });
 };
 
-// Liste des praticiens limité à 100, prêt pour pagination
-Praticien.getAllPraticiens = (numPage, result) => {
-  let offset = (numPage - 1) * 100;
+// Liste des praticiens limité, prêt pour pagination
+Praticien.getAllPraticiens = (numPage, filter, limit, result) => {
+  let offset = (numPage - 1) * limit;
   sql.query(
-    'SELECT * FROM praticien LIMIT 100 OFFSET ? ;',
-    offset,
+    `SELECT SQL_CALC_FOUND_ROWS p.id, p.nom, prenom, adresse, coef_notoriete, p.id_ville, p.code_type_praticien, v.code_postal AS 'code_postal', v.nom AS 'ville', tp.libelle AS 'type_praticien' 
+      FROM praticien p 
+      INNER JOIN ville v ON id_ville = v.id 
+      INNER JOIN type_praticien tp ON code_type_praticien = tp.code 
+      WHERE p.nom LIKE '%${filter}%' 
+      ORDER BY p.id DESC 
+      LIMIT ${limit} 
+      OFFSET ${offset};`,
     (err, res) => {
-      if (err) {
-        result(null, err);
-      } else {
-        result(null, res);
+      if (err) result(err);
+      else {
+        sql.query('SELECT FOUND_ROWS() as cnt', 0, (err, r) => {
+          if (err) result(err);
+          else {
+            result(res, r[0].cnt);
+          }
+        });
       }
     }
   );

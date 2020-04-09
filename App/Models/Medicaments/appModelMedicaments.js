@@ -23,19 +23,6 @@ Medicament.createMedicament = (newMedicament, result) => {
   });
 };
 
-Medicament.nombresPages = result => {
-  sql.query(
-    'SELECT IF(COUNT(*)%100 = 0,TRUNCATE(COUNT(*)/100, 0),TRUNCATE(COUNT(*)/100+1, 0)) FROM medicament;',
-    (err, res) => {
-      if (err) {
-        result(null, err);
-      } else {
-        result(null, res);
-      }
-    }
-  );
-};
-
 // Modification d'un médicament
 Medicament.updateMedicament = (id, medicament, result) => {
   sql.query(
@@ -66,17 +53,27 @@ Medicament.deleteMedicament = (id, result) => {
   );
 };
 
-// Liste des médicaments limité à 100, prêt pour pagination
-Medicament.getAllMedicaments = (numPage, result) => {
-  let offset = (numPage - 1) * 10;
+// Liste des praticiens limité, prêt pour pagination
+Medicament.getAllMedicaments = (numPage, filter, limit, result) => {
+  let offset = (numPage - 1) * limit;
   sql.query(
-    'SELECT * FROM medicament LIMIT 10 OFFSET ? ;',
-    offset,
+    `SELECT SQL_CALC_FOUND_ROWS MED_DEPOTLEGAL, MED_NOMCOMMERCIAL "Nom", f.FAM_LIBELLE "Famille", MED_COMPOSITION "Composition", MED_EFFETS "Effets", MED_CONTREINDIC "ContreIndication", MED_PRIXECHANTILLON "Prix" 
+      FROM medicament m 
+      INNER JOIN famille f ON m.FAM_CODE = f.FAM_CODE 
+      WHERE m.MED_NOMCOMMERCIAL LIKE '%${filter}%' 
+      ORDER BY m.MED_DEPOTLEGAL DESC 
+      LIMIT ?
+      OFFSET ?;`,
+    [limit, offset],
     (err, res) => {
-      if (err) {
-        result(null, err);
-      } else {
-        result(null, res);
+      if (err) result(err);
+      else {
+        sql.query('SELECT FOUND_ROWS() as cnt', 0, (err, r) => {
+          if (err) result(err);
+          else {
+            result(res, r[0].cnt);
+          }
+        });
       }
     }
   );

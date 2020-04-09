@@ -1,14 +1,15 @@
-module.exports = function(app) {
+module.exports = function (app) {
   const praticiens = require('../Controllers/appController');
   const medicaments = require('../Controllers/appController');
+  const villes = require('../Controllers/appController');
+  const types = require('../Controllers/appController');
 
   // praticiens routes
-  app
-    .route('/praticiens')
-    .get(praticiens.nombres_pages_praticiens)
-    .post(praticiens.create_praticien);
+  app.route('/praticiens').post(praticiens.create_praticien);
 
-  app.route('/praticiens/:numPage').get(praticiens.list_all_praticiens);
+  app
+    .route('/praticiens/:filter*?/:limit/:numPage')
+    .get(praticiens.list_all_praticiens);
 
   app
     .route('/praticiens/id/:praticienId')
@@ -16,13 +17,16 @@ module.exports = function(app) {
     .put(praticiens.update_praticien)
     .delete(praticiens.delete_praticien);
 
-  // médicaments routes
-  app
-    .route('/medicaments')
-    .get(medicaments.nombres_pages_medicaments)
-    .post(medicaments.create_medicament);
+  app.route('/villes/:code_postal').get(villes.get_villes_cp);
 
-  app.route('/medicaments/:numPage').get(medicaments.list_all_medicaments);
+  app.route('/types/').get(types.list_all_types);
+
+  // médicaments routes
+  app.route('/medicaments').post(medicaments.create_medicament);
+
+  app
+    .route('/medicaments/:filter*?/:limit/:numPage')
+    .get(medicaments.list_all_medicaments);
 
   app
     .route('/medicaments/id/:medicamentId')
